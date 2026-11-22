@@ -1,0 +1,38 @@
+
+CHIP Memory {
+    IN in[16],
+       load,
+       address[15];
+
+    OUT out[16];
+k
+    PARTS:
+
+    // Decode memory address
+    DMux(in=load, sel=address[14],
+         a=loadRAM, b=loadHigh);
+
+    // Select Screen for writes, not Keyboard
+    Not(in=address[13], out=notAddress13);
+    And(a=loadHigh, b=notAddress13,
+        out=loadScreen);
+
+    // RAM16K
+    RAM16K(in=in, load=loadRAM,
+           address=address[0..13], out=outRAM);
+
+    // Screen memory
+    Screen(in=in, load=loadScreen,
+           address=address[0..12], out=outScreen);
+
+    // Keyboard input
+    Keyboard(out=outKeyboard);
+
+    // Select Screen or Keyboard
+    Mux16(a=outScreen, b=outKeyboard,
+          sel=address[13], out=outHigh);
+
+    // Select RAM or high memory region
+    Mux16(a=outRAM, b=outHigh,
+          sel=address[14], out=out);
+}
